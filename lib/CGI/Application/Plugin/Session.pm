@@ -184,7 +184,7 @@ sub session_delete {
             $options{'name'} ||= CGI::Session->name;
             $options{'value'}    = '';
             $options{'-expires'} = '-1d';
-            my $newcookie = $self->query->cookie(%options);
+            my $newcookie = $self->query->cookie(\%options);
 
             # See if a session cookie has already been set (this will happen if
             #  this is a new session).  We keep all existing cookies except the
