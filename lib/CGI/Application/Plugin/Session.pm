@@ -122,7 +122,7 @@ sub session_cookie {
     if ($self->{__CAP__SESSION_CONFIG}->{COOKIE_PARAMS}) {
       %options = (%{ $self->{__CAP__SESSION_CONFIG}->{COOKIE_PARAMS} }, %options);
     }
-    
+
     if (!$self->{__CAP__SESSION_OBJ}) {
         # The session object has not been created yet, so make sure we at least call it once
         my $tmp = $self->session;
@@ -221,7 +221,7 @@ sub session_loaded {
 sub session_recreate {
     my $self = shift;
     my $data = {};
-    
+
     # Copy all values from existing session and delete it
     if (session_loaded($self)) {
         $data = $self->session->param_hashref;
@@ -269,7 +269,7 @@ by always returning the same Session object for the duration of the request.
 This module aims to be as simple and non obtrusive as possible.  By not requiring
 any changes to the inheritance tree of your modules, it can be easily added to
 existing applications.  Think of it as a plugin module that adds a couple of
-new methods directly into the CGI::Application namespace simply by loading the module.  
+new methods directly into the CGI::Application namespace simply by loading the module.
 
 =head1 METHODS
 
@@ -284,9 +284,9 @@ create the session object.
 
   # retrieve the session object
   my $session = $self->session;
- 
+
   - or -
- 
+
   # use the session object directly
   my $language = $self->session->param('language');
 
@@ -369,7 +369,7 @@ expiry and domain on the cookie.
                                    -secure  => 1,
                                  },
  );
- 
+
 
 =head2 session_cookie
 
@@ -444,11 +444,11 @@ you are using cookies.
 
 In a CGI::Application module:
 
-  
+
   # configure the session once during the init stage
   sub cgiapp_init {
     my $self = shift;
- 
+
     # Configure the session
     $self->session_config(
        CGI_SESSION_OPTIONS => [ "driver:PostgreSQL;serializer:Storable", $self->query, {Handle=>$self->dbh} ],
@@ -459,27 +459,27 @@ In a CGI::Application module:
                               },
        SEND_COOKIE         => 1,
     );
- 
+
   }
- 
+
   sub cgiapp_prerun {
     my $self = shift;
- 
+
     # Redirect to login, if necessary
     unless ( $self->session->param('~logged-in') ) {
       $self->prerun_mode('login');
     }
   }
- 
+
   sub my_runmode {
     my $self = shift;
- 
+
     # Load the template
     my $template = $self->load_tmpl('my_runmode.tmpl');
- 
+
     # Add all the session parameters to the template
     $template->param($self->session->param_hashref());
- 
+
     # return the template output
     return $template->output;
   }
