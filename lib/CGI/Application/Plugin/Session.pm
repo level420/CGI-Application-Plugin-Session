@@ -79,7 +79,6 @@ sub session_config {
       die "Calling session_config after the session has already been created" if (defined $self->{__CAP__SESSION_OBJ});
       my $props;
       if (ref($_[0]) eq 'HASH') {
-          my $rthash = %{$_[0]};
           $props = $self->_cap_hash($_[0]);
       } else {
           $props = $self->_cap_hash({ @_ });

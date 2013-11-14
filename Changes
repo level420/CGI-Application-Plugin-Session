@@ -2,6 +2,7 @@ Revision history for Perl extension CGI::Application::Plugin::Session.
 
     - Fix hash randomization bug tickled by perl 5.18
       (Arthur Axel 'fREW' Schmidt)
+    - Delete some dead code (RT#46587, Nate Smith)
 
 1.03
 
