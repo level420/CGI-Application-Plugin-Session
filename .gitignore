@@ -1,0 +1,3 @@
+*.gz
+.build
+CGI-Application-Plugin-Session-*

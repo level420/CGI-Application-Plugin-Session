@@ -6,6 +6,8 @@ use CGI::Application 3.21;
 use Carp qw(croak);
 use Scalar::Util ();
 
+# ABSTRACT: Plugin that adds session support to CGI::Application
+
 use strict;
 use vars qw($VERSION @EXPORT);
 
@@ -20,8 +22,6 @@ require Exporter;
   session_recreate
 );
 sub import { goto &Exporter::import }
-
-$VERSION = '1.03';
 
 sub session {
     my $self = shift;
