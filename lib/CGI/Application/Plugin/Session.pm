@@ -40,7 +40,8 @@ sub session {
         # CGI::Session only works properly with CGI.pm so extract the sid manually if
         # another module is being used
         if (Scalar::Util::blessed($params[1]) && ! $params[1]->isa('CGI')) {
-            my $sid = $params[1]->cookie(CGI::Session->name) || $params[1]->param(CGI::Session->name);
+            my $name = __locate_session_name( $self ); ## plugin method call
++           my $sid  = $params[1]->cookie($name) || $params[1]->param($name);
             $params[1] = $sid;
         }
 
@@ -62,7 +63,9 @@ sub session {
         #  or if the session has an expiry set on it
         #  but don't send it if SEND_COOKIE is set to 0
         if (!defined $self->{__CAP__SESSION_CONFIG}->{SEND_COOKIE} || $self->{__CAP__SESSION_CONFIG}->{SEND_COOKIE}) {
-            my $cid = $self->query->cookie(CGI::Session->name);
+            my $cid = $self->query->cookie(
+                $self->{__CAP__SESSION_OBJ}->name
+            );
             if (!$cid || $cid ne $self->{__CAP__SESSION_OBJ}->id || $self->{__CAP__SESSION_OBJ}->expire()) {
                 session_cookie($self);
             }
@@ -127,7 +130,16 @@ sub session_cookie {
         my $tmp = $self->session;
     }
 
-    $options{'-name'}    ||= CGI::Session->name;
+    ## check cookie option -name with session name
+    ## if different these may cause problems/confusion
+    if ( exists $options{'-name'} and
+        $options{'-name'} ne $self->session->name ) {
+        warn sprintf( "Cookie '%s' and Session '%s' name don't match.\n",
+            $options{'-name'}, $self->session->name )
+    }
+
+    ## setup the values for cookie
+    $options{'-name'}    ||= $self->session->name;
     $options{'-value'}   ||= $self->session->id;
     if(defined($self->session->expires()) && !defined($options{'-expires'})) {
         $options{'-expires'} = _build_exp_time( $self->session->expires() );
@@ -180,7 +192,7 @@ sub session_delete {
             if ( $self->{'__CAP__SESSION_CONFIG'}->{'COOKIE_PARAMS'} ) {
                 %options = ( %{ $self->{'__CAP__SESSION_CONFIG'}->{'COOKIE_PARAMS'} }, %options );
             }
-            $options{'name'} ||= CGI::Session->name;
+            $options{'name'} ||= $session->name;
             $options{'value'}    = '';
             $options{'-expires'} = '-1d';
             my $newcookie = $self->query->cookie(\%options);
@@ -194,7 +206,7 @@ sub session_delete {
             my $cookies = $headers{'-cookie'} || [];
             $cookies = [$cookies] unless ref $cookies eq 'ARRAY';
             foreach my $cookie (@$cookies) {
-                if ( ref($cookie) ne 'CGI::Cookie' || $cookie->name ne CGI::Session->name ) {
+                if ( ref($cookie) ne 'CGI::Cookie' || $cookie->name ne $session->name ) {
                     # keep this cookie
                     push @keep, $cookie;
                 }
@@ -238,6 +250,22 @@ sub session_recreate {
     }
 
     return 1;
+}
+
+## all a hack to adjust for problems with cgi::session and
+## it not playing with non-CGI.pm objects
+sub __locate_session_name {
+    my $self = shift;
+    my $sess_opts = $self->{__CAP__SESSION_CONFIG}->{CGI_SESSION_OPTIONS};
+
+    ## search for 'name' cgi session option
+    if ( $sess_opts and $sess_opts->[4]
+         and ref $sess_opts->[4] eq 'HASH'
+         and exists $sess_opts->[4]->{name} ) {
+        return $sess_opts->[4]->{name};
+    }
+
+    return CGI::Session->name;
 }
 
 1;
@@ -330,8 +358,19 @@ The -name and -value parameters for the cookie will be added automatically unles
 you specifically override them by providing -name and/or -value parameters.
 See the L<CGI::Cookie> docs for the exact syntax of the parameters.
 
-NOTE:  If you change the name of the cookie by passing a -name parameter, remember to notify
-CGI::Session of the change by calling CGI::Session->name('new_cookie_name').
+NOTE: You can do the following to get both the cookie name and the internal name of the CGI::Session object to be changed:
+
+  $self->session_config(
+    CGI_SESSION_OPTIONS => [
+      $driver,
+      $self->query,
+      \%driver_options,
+      { name => 'new_cookie_name' } # change cookie and session name
+    ]
+  );
+
+Also, if '-name' parameter and 'name' of session don't match a warning will
+be emitted.
 
 =item SEND_COOKIE
 

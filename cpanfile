@@ -1,4 +1,4 @@
-requires 'CGI::Session' => 3.95;
+requires 'CGI::Session' => 4.48;
 requires 'CGI::Application' => 3.21;
 requires 'File::Spec';
 requires 'Scalar::Util';
