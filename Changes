@@ -1,6 +1,7 @@
 Revision history for Perl extension CGI::Application::Plugin::Session.
 
 {{ $NEXT }}
+    - Stop depending on ->DESTROY to call ->flush (reported by Gareth Tunley)
 
 1.04      2013-11-14 10:48:29 America/Chicago
 

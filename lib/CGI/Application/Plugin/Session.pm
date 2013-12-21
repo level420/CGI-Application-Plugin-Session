@@ -187,6 +187,7 @@ sub session_delete {
 
     if ( my $session = $self->session ) {
         $session->delete;
+        $session->flush;
         if ( $self->{'__CAP__SESSION_CONFIG'}->{'SEND_COOKIE'} ) {
             my %options;
             if ( $self->{'__CAP__SESSION_CONFIG'}->{'COOKIE_PARAMS'} ) {
@@ -237,6 +238,7 @@ sub session_recreate {
     if (session_loaded($self)) {
         $data = $self->session->param_hashref;
         $self->session->delete;
+        $self->session->flush;
         $self->{__CAP__SESSION_OBJ} = undef;
 
     }
@@ -248,6 +250,7 @@ sub session_recreate {
         next if index($k, '_SESSION_') == 0;
         $session->param($k => $v);
     }
+    $session->flush;
 
     return 1;
 }
